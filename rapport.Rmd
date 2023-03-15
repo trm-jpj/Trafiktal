@@ -1,0 +1,84 @@
+---
+title: ""
+output: 
+  word_document:
+    reference_docx: word-style-02.docx 
+date: '`r Sys.Date() |> format("%d. %B %Y") |> stringr::str_remove("^0")`'
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+
+ft <- fp_text(font.size = 7,font.family = "Georgia")
+figur <- fp_text(font.size = 9,font.family = "Georgia", bold = TRUE, color = "#474747")
+
+text_fkt <- function(text){
+  fpar(ftext(text, ft), fp_p = fp_par(line_spacing = 1))
+}
+
+dato_rkort <- data_til_fig$DATO_END |> max() |> 
+  format("%d. %B %Y") |> 
+  str_remove("^0")
+
+set_flextable_defaults(
+  font.size = 7,
+  theme_fun = theme_vanilla, font.family = "Gerorgia",
+  padding = 0,
+  
+  # opts_word = list(keep_with_next=FALSE),
+  background.color = "#ECECEC")
+
+
+mytf <- flextable(data_dsb_saml_end)
+
+
+mytf <- set_table_properties(
+  x = mytf,
+  opts_word  = list( keep_with_next = TRUE)) |> 
+  autofit(add_w = 0.1,
+  add_h = 0.1,
+  part = "body",
+  unit = "in",
+  hspans = "none"
+) |> 
+  width(width = 0.58) |>
+align_text_col(align = "center") |> 
+  # hrule(rule = "exact", part = "all") |> 
+  colformat_double(big.mark = ".", decimal.mark = ",", digits = 0) |> 
+  bold(~ `Antal i tusinde` %in% c("Fjern- & Regionaltog", "S-tog", "I alt"), ~ `Antal i tusinde`, bold = TRUE)
+
+
+```
+
+# Trafiknøgletal for Rejskortet og DSB
+
+## 1 Rejsekort 
+
+`r ftext(str_glue("Figur 1. Udvikling i aktiviteten for rejsekort i {aar} sammenlignet med 2019 (data frem til {dato_rkort}) "), figur)`
+```{r, echo=FALSE,fig.height=5,fig.width=10,out.height=400,out.width=700}
+print(data_rejseaktivitet)
+```
+`r text_fkt("Anm.: Tendenslinje (orange stiplet) er baseret på 7 dages glidende gennemsnit.")`
+`r text_fkt(str_glue("Note: Der er foretaget en metodeændring fra 24 maj 2021 til 29 september 2021, hvor sammenligning er foretaget i forhold til gennemsnittet pr ugedag i ugerne 5, 6, 9 og 10 i 2020. Denne udvikling er herefter sæsonkorrigeret med udviklingen i 2019. Niveauet er derved ikke direkte sammenlignelige med den foregående og efterfølgende periode. Lignende korrektion foretages fra den 1. januar {aar} og frem."))`
+`r text_fkt("Kilde: Rejsekortet")`  
+
+\newpage
+
+## 2 DSB 
+
+`r ftext(str_glue("Tabel 1: Antal rejsende pr. måned (data frem til {dato_rkort})"), figur)`  
+```{r, fig.align='left'}
+mytf
+```
+`r text_fkt("Anm.: Antal målt i tusinde.  ")`
+`r text_fkt("Kilde: DSB")`  
+
+
+`r ftext(str_glue("Figur 2. Udvikling i aktiviteten for S-tog i 2022 sammenlignet med 2019 (data frem til {dato_rkort}) "), figur)`  
+```{r, echo=FALSE,fig.height=5,fig.width=10,out.height=400,out.width=700}
+print(fig_DSB)
+```
+`r text_fkt(str_glue("Anm.: Den blå linje er {aar} andelen af antal rejsende i forhold til en sammenlignelig dag i 2019. Der bliver f.eks. taget hensyn til at helligdag ikke falder samme dato hver år.  Gul stiplet linje er et løbene gennemsnit over 7 dage."))`
+`r text_fkt("Kilde: DSB")`  
