@@ -23,7 +23,6 @@ library(TRMvisual)
 library(extrafont)
 library(tidyquant)
 library(TTR)
-library(flextable)
 
 Sys.setlocale("LC_TIME", "Danish")
 

@@ -1,4 +1,7 @@
 
+library(readr)
+library(readxl)
+library(flextable)
 
 seneste_dsb <- dir("data") |> 
   str_subset("Rapportering") |> 
@@ -8,8 +11,9 @@ seneste_dsb <- dir("data") |>
 dsb_saml_aar <- dir("data") |> 
   str_subset("^TRM") |> 
   str_remove("\\D+") |> 
-  word(2, sep=" ") |> 
   str_remove("\\D+") |> max()
+
+readxl::excel_sheets(str_glue("data/Rapportering TRM S-tog {seneste_dsb}.xlsx"))
 
 data_dsb_2019 <- readxl::read_xlsx(str_glue("data/Rapportering TRM S-tog {seneste_dsb}.xlsx"),
                             sheet = "Ark4",
@@ -35,14 +39,14 @@ data_dsb_nu <- readxl::read_xlsx(str_glue("data/Rapportering TRM S-tog {seneste_
   select(7:10) |> 
   filter(get(rejse_kol)!=0 & !is.na(get(rejse_kol)))
 
-skip_row <- readxl::read_xlsx(str_glue("data/TRM {aar} {dsb_saml_aar}.xlsx"),
+skip_row <- readxl::read_xlsx(str_glue("data/TRM {dsb_saml_aar}.xlsx"),
                   sheet = "Ark1",
                   skip =0, .name_repair = ~str_to_sentence(.x)) |> 
   mutate(row_number = row_number()) |> 
-  filter(if_any(.fns = ~.x==aar)) |> 
+  filter(if_any(.fns = ~.x==dsb_saml_aar)) |> 
   pull("row_number")
 
-data_dsb_saml <- readxl::read_xlsx(str_glue("data/TRM {aar} {dsb_saml_aar}.xlsx"),
+data_dsb_saml <- readxl::read_xlsx(str_glue("data/TRM {dsb_saml_aar}.xlsx"),
                                    sheet = "Ark1",
                                    skip =skip_row+1, .name_repair = ~str_to_sentence(.x)) |> 
   select(where(~all(!is.na(.x))))
@@ -68,7 +72,7 @@ y_min_dsb <- data_til_fig_dsb$ANDEL |> min(na.rm = T) |>  plyr::round_any(10, fl
 
 fig_DSB <- data_til_fig_dsb |> 
   ggplot(aes(x = as.Date(DATO), y = ANDEL)) +
-  geom_line(color =  trm_colors("blaa"), size = 1.2) +
+  geom_line(color =  trm_colors("blå"), size = 1.2) +
   geom_ma(ma_fun = SMA, n = 7, color = trm_colors("gul"), size = 1.2, linetype = "dotted") +
   # geom_segment(aes(x = as.Date(str_c(aar, "-02-01")), xend = as.Date(as.Date(str_c(aar, "-02-01"))), 
   #                  y = y_min_dsb, yend = y_max_dsb), 

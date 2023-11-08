@@ -14,6 +14,7 @@ data_trafiktal <- readxl::read_xlsx(str_glue("data/Daglig rejseaktivitet frem ti
                               str_replace_all(c(" " = "_", "-" = "_", "Å"="AA", "Æ"="AE", "Ø"="OE")) |> 
                               str_replace_all("_{2,}", "_"))
 
+intr_aar <- data_trafiktal_1$DATO_END |> year() |> max()
 
 #Renser data og laver kolonnerne om til et anvendeligt format
 data_trafiktal_1 <- data_trafiktal |> 
@@ -56,7 +57,7 @@ season_korr <- tribble(~UGEDAG, ~HELDAG_SEASON_2019, ~HELDAG_SEASON_2020,
 
 # Seasonkorrigerer
 data_til_fig <- data_trafiktal_1 |> 
-  filter(year(DATO_END)==aar) |> 
+  filter(year(DATO_END)==intr_aar) |> 
   left_join(season_korr |> select(UGEDAG, HELDAG_SEASON_2020)) |> 
   left_join(season_korr |> select(UGEDAG_2019 = UGEDAG, HELDAG_SEASON_2019)) |> 
   mutate(DATO_END, RELATIV_FORSKEL = REJSER_I_ALT_HELDAG/REJSER_I_ALT_HELDAG_2019 -1,
@@ -77,7 +78,7 @@ metro <- filter(data_til_fig,
 
 data_rejseaktivitet <- data_til_fig |> 
   ggplot(aes(x = DATO_END, y = KORR_FORSKEL)) +
-  geom_line(color =  trm_colors("blaa"), size = 1.2) + #Laver linjen
+  geom_line(color =  trm_colors("blå"), size = 1.2) + #Laver linjen
   geom_ma(ma_fun = SMA, n = 7, color = trm_colors("gul"), size = 1.2, linetype = "dotted") + #Laver det glidende gennemsnit
   # geom_segment(aes(x = as.Date(as.Date(str_c(aar, "-02-01"))), xend = as.Date(as.Date(str_c(aar, "-02-01"))), y = y_min, yend = y_max), 
   #              color = trm_colors("grå"), size = 2) + #Laver den grå linje der markerer hvornår samfundet åbnede op igen
